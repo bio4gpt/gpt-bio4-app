@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import difflib
 
 # Carga de archivos
 precios = pd.read_csv("PRECIOS_BIO4_PRESENTACION_FINAL.csv")
@@ -14,9 +15,15 @@ st.title("Asistente Validador de Productos BIO4")
 consulta = st.text_input("Haz tu pregunta sobre un producto BIO4:")
 
 if consulta:
-    coincidencias = preguntas[preguntas["Pregunta"].str.contains(consulta, case=False, na=False)]
+    # Lista de preguntas oficiales
+    preguntas_lista = preguntas["Pregunta"].tolist()
+    # Buscar coincidencia más cercana
+    pregunta_cercana = difflib.get_close_matches(consulta, preguntas_lista, n=1, cutoff=0.6)
 
-    if not coincidencias.empty:
+    if pregunta_cercana:
+        coincidencias = preguntas[preguntas["Pregunta"] == pregunta_cercana[0]]
+        st.info(f"¿Querías preguntar esto?: **{pregunta_cercana[0]}**")
+
         for i, fila in coincidencias.iterrows():
             st.success(f"**Respuesta oficial:** {fila['Respuesta']}")
     else:
